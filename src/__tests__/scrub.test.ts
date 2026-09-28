@@ -68,6 +68,26 @@ describe("scrubPiFingerprints", () => {
     expect(out).not.toContain("pi-coding-agent")
   })
 
+  it("removes both tags of Pi's sectioned docs block without losing other sections", () => {
+    const prompt = [
+      `<preamble>\n${IDENTITY.trimEnd()}\n</preamble>`,
+      "<rules>\nFollow the rules.\n</rules>",
+      `<docs>\n${DOCS_BLOCK}\n</docs>`,
+      "<project_context>\nFollow the house style.\n</project_context>",
+      "<skills>\nRead the relevant skill.\n</skills>",
+      "<cwd>\n/repo\n</cwd>",
+    ].join("\n\n")
+    const out = scrubPiFingerprints(prompt)
+    expect(out).not.toContain("<docs>")
+    expect(out).not.toContain("</docs>")
+    expect(out).not.toContain("Pi documentation")
+    expect(out).toContain("Follow the rules.")
+    expect(out).toContain("Follow the house style.")
+    expect(out).toContain("Read the relevant skill.")
+    expect(out).toContain("<cwd>\n/repo\n</cwd>")
+    expect(scrubPiFingerprints(out)).toBe(out)
+  })
+
   it("preserves project context, guidelines, and tools", () => {
     const out = scrubPiFingerprints(FULL_PROMPT)
     expect(out).toContain("<project_context>")
